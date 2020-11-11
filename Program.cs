@@ -53,6 +53,7 @@ namespace TodoList201110
                         else
                         {
                             Console.WriteLine("Answer y or n!");
+                            Console.WriteLine("Do you want to save your project? (y/n)");
                         }
                     }
                 }
@@ -64,26 +65,44 @@ namespace TodoList201110
                 }
                 else if (commandWord[0] == "show")
                 {
-                    if (commandWord[1] == "path")
+                    if(commandWord.Length != 1)
                     {
-                        Console.WriteLine(path);
-                    }
-                    else if (commandWord[1] == "list")
-                    {
-                        PrintList(todoList);
+                        PrintList(todoList, commandWord[1]);
                     }
                     else
                     {
-                        Console.WriteLine("Show what?");
+                        commandWord[1] = " ";
+                        PrintList(todoList, commandWord[1]);
                     }
+                }
+                else if (commandWord[0] == "move")
+                {
+                    MoveInList(todoList, commandWord[1], commandWord[2]);
+                }
+                else if (commandWord[0] == "delete")
+                {
+                    DelInList(todoList, commandWord[1]);
+                }
+                else if (commandWord[0] == "set")
+                {
+                    SetInList(todoList, commandWord[1], commandWord[2]);
                 }
                 else if (commandWord[0] == "add")
                 {
-                    AddToListFile(todoList);
+                    AddToListFile(todoList, commandWord[1], commandWord[2]);
                 }
                 else if (commandWord[0] == "save")
                 {
-                    SaveTodoListFile(todoList, path);
+                    if (commandWord.Length == 1)
+                    {
+                        SaveTodoListFile(todoList, path);
+                    }
+                    else
+                    {
+                        SaveTodoListFile(todoList, commandWord[1]);
+                        path = commandWord[1];
+                        Console.WriteLine($"New path: {path}");
+                    }
                 }
                 else
                 {
@@ -91,7 +110,7 @@ namespace TodoList201110
                 }
             } while (commandWord[0] != "quit");
         }
-        static void PrintList(List<Activity> todoList)
+        static void PrintList(List<Activity> todoList, string whatToShow)
         {
             Console.WriteLine("N  datum  S  rubrik");
             Console.WriteLine("-------------------------------------------");
@@ -99,10 +118,54 @@ namespace TodoList201110
             {
                 if (todoList[i] != null)
                 {
-                    Console.WriteLine($"{i + 1}: - {todoList[i].date} - {todoList[i].state} - {todoList[i].title}");
+                    if (whatToShow == "all")
+                    {
+                        Console.WriteLine($"{i + 1}: - {todoList[i].date} - {todoList[i].state} - {todoList[i].title}");
+                    }
+                    else if (whatToShow == "done")
+                    {
+                        if (todoList[i].state == "*")
+                        {
+                            Console.WriteLine($"{i + 1}: - {todoList[i].date} - {todoList[i].state} - {todoList[i].title}");
+                        }
+                    }
+                    else
+                    {
+                        if (todoList[i].state != "*")
+                        {
+                            Console.WriteLine($"{i + 1}: - {todoList[i].date} - {todoList[i].state} - {todoList[i].title}");
+                        }
+                    }
                 }
             }
             Console.WriteLine("-------------------------------------------");
+        }
+        static void MoveInList(List<Activity> todoList, string place, string upOrDown)
+        {
+            int oldPos = int.Parse(place) - 1;
+            if (upOrDown == "up")
+            {
+                Activity temp = todoList[oldPos];
+                todoList.RemoveAt(oldPos);
+                todoList.Insert(oldPos - 1, temp);
+            }
+            else if (upOrDown == "down")
+            {
+                Activity temp = todoList[oldPos];
+                todoList.RemoveAt(oldPos);
+                todoList.Insert(oldPos + 1, temp);
+            }
+        }
+        static void SetInList(List<Activity> todoList, string place, string newState)
+        {
+            int setNum = int.Parse(place) - 1;
+            todoList[setNum].state = newState;
+        }
+        static void DelInList(List<Activity> todoList, string place)
+        {
+            int delNum = int.Parse(place) - 1;
+            Activity tempDel = todoList[delNum];
+            todoList.RemoveAt(delNum);
         }
         private static List<Activity> ReadTodoListFile(string fileName)
         {
@@ -113,7 +176,6 @@ namespace TodoList201110
                 {
                     string[] lineWord = streamReader.ReadLine().Split('#');
                     Activity A = new Activity(lineWord[0], lineWord[1], lineWord[2]);
-                    //Console.WriteLine($"{A.date} - {A.state} - {A.title}");
                     todoList.Add(A);
                 }
                 // streamReader.Close();
@@ -122,8 +184,6 @@ namespace TodoList201110
         }
         private static void SaveTodoListFile(List<Activity> todoList, string fileName)
         {
-            Console.Write("What path?: ");
-            fileName = Console.ReadLine();
             using (StreamWriter writer = new StreamWriter(fileName))
             {
                 for (int i = 0; i < todoList.Count(); i++)
@@ -133,16 +193,10 @@ namespace TodoList201110
                 Console.WriteLine("Todolist is saved!");
             }
         }
-        private static void AddToListFile(List<Activity> todoList)
+        private static void AddToListFile(List<Activity> todoList, string date, string title)
         {
-            Console.Write("What's the date: ");
-            string date = Console.ReadLine();
-            Console.Write("What's the state: ");
-            string state = Console.ReadLine();
-            Console.Write("What's the title: ");
-            string title = Console.ReadLine();
+            string state = "v";
             todoList.Add(new Activity(date, state, title));
-            PrintList(todoList);
         }
     }
 }
