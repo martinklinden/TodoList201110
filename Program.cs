@@ -122,8 +122,8 @@ namespace TodoList201110
         }
         private static void SaveTodoListFile(List<Activity> todoList, string fileName)
         {
-            // Console.Write("What path?: ");
-            // fileName = Console.ReadLine();
+            Console.Write("What path?: ");
+            fileName = Console.ReadLine();
             using (StreamWriter writer = new StreamWriter(fileName))
             {
                 for (int i = 0; i < todoList.Count(); i++)
